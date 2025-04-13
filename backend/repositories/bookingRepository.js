@@ -1,0 +1,96 @@
+import pool from "../config/database.js";
+
+export async function getBookingsByUser(userId, isAdmin) {
+  let query = isAdmin
+    ? "SELECT * FROM bookings"
+    : "SELECT * FROM bookings WHERE user_id = ?";
+  const params = isAdmin ? [] : [userId];
+  const [bookings] = await pool.query(query, params);
+  return bookings;
+}
+
+export async function getBookingById(id, userId, isAdmin) {
+  let query = "SELECT * FROM bookings WHERE id = ?";
+  let params = [id];
+  if (!isAdmin) {
+    query += " AND user_id = ?";
+    params.push(userId);
+  }
+  const [bookings] = await pool.query(query, params);
+  return bookings[0] || null;
+}
+
+export async function checkAvailability(
+  roomId,
+  startTime,
+  endTime,
+  excludeBookingId = null
+) {
+  let query =
+    'SELECT * FROM bookings WHERE room_id = ? AND status != "cancelled" AND ((start_time <= ? AND end_time >= ?) OR (start_time <= ? AND end_time >= ?) OR (start_time >= ? AND end_time <= ?))';
+  let params = [
+    roomId,
+    endTime,
+    startTime,
+    startTime,
+    startTime,
+    endTime,
+    startTime,
+    endTime,
+  ];
+
+  if (excludeBookingId) {
+    query += " AND id != ?";
+    params.push(excludeBookingId);
+  }
+
+  const [conflicts] = await pool.query(query, params);
+  return conflicts.length === 0;
+}
+
+export async function createBooking({ userId, roomId, startTime, endTime }) {
+  const [result] = await pool.query(
+    "INSERT INTO bookings (user_id, room_id, start_time, end_time, status) VALUES (?, ?, ?, ?, ?)",
+    [userId, roomId, startTime, endTime, "confirmed"]
+  );
+  return result.insertId;
+}
+
+export async function updateBooking(
+  id,
+  { roomId, startTime, endTime, status },
+  userId,
+  isAdmin
+) {
+  let query =
+    "UPDATE bookings SET room_id = ?, start_time = ?, end_time = ?, status = ? WHERE id = ?";
+  let params = [roomId, startTime, endTime, status || "confirmed", id];
+
+  if (!isAdmin) {
+    query += " AND user_id = ?";
+    params.push(userId);
+  }
+
+  const [result] = await pool.query(query, params);
+  return result.affectedRows > 0;
+}
+
+export async function cancelBooking(id, userId, isAdmin) {
+  let query = 'UPDATE bookings SET status = "cancelled" WHERE id = ?';
+  let params = [id];
+
+  if (!isAdmin) {
+    query += " AND user_id = ?";
+    params.push(userId);
+  }
+
+  const [result] = await pool.query(query, params);
+  return result.affectedRows > 0;
+}
+
+export async function roomExists(roomId) {
+  const [rooms] = await pool.query("SELECT * FROM rooms WHERE id = ?", [
+    roomId,
+  ]);
+  return rooms.length > 0;
+}
