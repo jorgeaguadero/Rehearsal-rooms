@@ -5,6 +5,7 @@ import Register from "./pages/Register";
 import Dashboard from "./pages/Dashboard";
 import Bookings from "./pages/Bookings";
 import AdminPanel from "./pages/AdminPanel";
+import Rooms from "./pages/Rooms";
 
 function App() {
   return (
@@ -16,6 +17,7 @@ function App() {
           <Route path="/register" element={<Register />} />
           <Route path="/dashboard" element={<Dashboard />} />
           <Route path="/bookings" element={<Bookings />} />
+          <Route path="/rooms" element={<Rooms />} />
           <Route path="/admin" element={<AdminPanel />} />{" "}
           {/*Implementar solo admin */}
         </Routes>
