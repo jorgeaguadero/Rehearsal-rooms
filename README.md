@@ -93,7 +93,9 @@ Este repositorio contiene el proyecto completo, con el backend en la carpeta `ba
 
    - Pega la salida para JWT_SECRET
 
-4. **Ejecuta el script de BBDD**:
+4. **Ejecuta los script de BBDD**:
    ```bash
-       mysql -u root -p rehearsal_rooms < create_database.sql
+      mysql -u root -p < backend/database/create_database.sql
+      mysql -u root -p rehearsal_rooms < backend/database/add_users_test.sql
+      mysql -u root -p rehearsal_rooms < backend/database/seed_test_data.sql
    ```
