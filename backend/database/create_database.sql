@@ -1,8 +1,12 @@
+-- Eliminar la base de datos si existe
+DROP DATABASE IF EXISTS rehearsal_rooms;
+
 -- Crear la base de datos
 CREATE DATABASE rehearsal_rooms;
 USE rehearsal_rooms;
 
 -- Crear tabla de usuarios
+DROP TABLE IF EXISTS users;
 CREATE TABLE users (
     id INT AUTO_INCREMENT PRIMARY KEY,
     username VARCHAR(50) UNIQUE NOT NULL,
@@ -13,6 +17,7 @@ CREATE TABLE users (
 );
 
 -- Crear tabla de salas
+DROP TABLE IF EXISTS rooms;
 CREATE TABLE rooms (
     id INT AUTO_INCREMENT PRIMARY KEY,
     name VARCHAR(100) NOT NULL,
@@ -23,6 +28,7 @@ CREATE TABLE rooms (
 );
 
 -- Crear tabla de reservas
+DROP TABLE IF EXISTS bookings;
 CREATE TABLE bookings (
     id INT AUTO_INCREMENT PRIMARY KEY,
     user_id INT NOT NULL,
