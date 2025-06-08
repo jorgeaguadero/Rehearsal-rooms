@@ -26,18 +26,11 @@ export async function checkAvailability(
   endTime,
   excludeBookingId = null
 ) {
+  // Solo hay conflicto si el nuevo tramo se solapa parcialmente con una reserva existente
+  // Es decir: start < bEnd && end > bStart
   let query =
-    'SELECT * FROM bookings WHERE room_id = ? AND status != "cancelled" AND ((start_time <= ? AND end_time >= ?) OR (start_time <= ? AND end_time >= ?) OR (start_time >= ? AND end_time <= ?))';
-  let params = [
-    roomId,
-    endTime,
-    startTime,
-    startTime,
-    startTime,
-    endTime,
-    startTime,
-    endTime,
-  ];
+    'SELECT * FROM bookings WHERE room_id = ? AND status != "cancelled" AND (start_time < ? AND end_time > ?)';
+  let params = [roomId, endTime, startTime];
 
   if (excludeBookingId) {
     query += " AND id != ?";

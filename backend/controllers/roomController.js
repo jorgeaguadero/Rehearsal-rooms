@@ -1,4 +1,5 @@
 import { roomRepository } from "../repositories/index.js";
+import path from "path";
 
 export async function getRooms(req, res) {
   try {
@@ -27,20 +28,21 @@ export async function getRoomById(req, res) {
 export async function createRoom(req, res) {
   try {
     const { name, description, capacity, price_per_hour } = req.body;
-
-    if (!name || !capacity || !price_per_hour) {
-      return res
-        .status(400)
-        .json({
-          error: "Nombre, capacidad y precio por hora son obligatorios",
-        });
+    let image = req.body.image;
+    if (req.file) {
+      image = path.join("rooms", req.file.filename).replace(/\\/g, "/");
     }
-
+    if (!name || !capacity || !price_per_hour) {
+      return res.status(400).json({
+        error: "Nombre, capacidad y precio por hora son obligatorios",
+      });
+    }
     const id = await roomRepository.createRoom({
       name,
       description,
       capacity,
       price_per_hour,
+      image,
     });
     res.status(201).json({ message: "Sala creada con éxito", id });
   } catch (error) {
@@ -52,25 +54,25 @@ export async function updateRoom(req, res) {
   try {
     const { id } = req.params;
     const { name, description, capacity, price_per_hour } = req.body;
-
-    if (!name || !capacity || !price_per_hour) {
-      return res
-        .status(400)
-        .json({
-          error: "Nombre, capacidad y precio por hora son obligatorios",
-        });
+    let image = req.body.image;
+    if (req.file) {
+      image = path.join("rooms", req.file.filename).replace(/\\/g, "/");
     }
-
+    if (!name || !capacity || !price_per_hour) {
+      return res.status(400).json({
+        error: "Nombre, capacidad y precio por hora son obligatorios",
+      });
+    }
     const updated = await roomRepository.updateRoom(id, {
       name,
       description,
       capacity,
       price_per_hour,
+      image,
     });
     if (!updated) {
       return res.status(404).json({ error: "Sala no encontrada" });
     }
-
     res.json({ message: "Sala actualizada con éxito" });
   } catch (error) {
     res.status(500).json({ error: "Error al actualizar la sala" });
@@ -89,5 +91,17 @@ export async function deleteRoom(req, res) {
     res.json({ message: "Sala eliminada con éxito" });
   } catch (error) {
     res.status(500).json({ error: "Error al eliminar la sala" });
+  }
+}
+
+export async function getRoomAvailability(req, res) {
+  try {
+    const { id } = req.params;
+    const bookings = await roomRepository.getRoomBookings(id);
+    res.json(bookings);
+  } catch (error) {
+    res
+      .status(500)
+      .json({ error: "Error al obtener la disponibilidad de la sala" });
   }
 }

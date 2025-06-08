@@ -2,18 +2,27 @@ import express from "express";
 import cors from "cors";
 import "dotenv/config";
 import { authRoutes, roomRoutes, bookingRoutes } from "./routes/index.js";
+import path from "path";
+import { upload } from "./middleware/upload.js";
 
 const app = express();
+const __dirname = path.resolve();
 
 // Middleware
 app.use(
   cors({
-    origin: process.env.FRONTEND_URL || "http://localhost:5173",
+    origin: [
+      process.env.FRONTEND_URL || "http://localhost:5173",
+      "http://127.0.0.1:5173",
+    ],
     methods: ["GET", "POST", "PUT", "DELETE", "OPTIONS"],
     allowedHeaders: ["Content-Type", "Authorization"],
   })
 );
 app.use(express.json());
+
+// Exponer carpeta de imágenes de salas
+app.use("/rooms", express.static(path.join(__dirname, "public/rooms")));
 
 // Rutas
 app.use("/api/auth", authRoutes);

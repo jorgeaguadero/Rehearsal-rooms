@@ -24,6 +24,7 @@ CREATE TABLE rooms (
     description TEXT,
     capacity INT NOT NULL,
     price_per_hour DECIMAL(10,2) NOT NULL,
+    image VARCHAR(255) DEFAULT NULL,
     created_at DATETIME DEFAULT CURRENT_TIMESTAMP
 );
 

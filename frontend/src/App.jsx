@@ -6,11 +6,12 @@ import Dashboard from "./pages/Dashboard";
 import Bookings from "./pages/Bookings";
 import AdminPanel from "./pages/AdminPanel";
 import Rooms from "./pages/Rooms";
+import Footer from "./components/Footer";
 
 function App() {
   return (
     <Router>
-      <div className="min-h-screen bg-gray-100">
+      <div className="min-h-screen bg-gradient-to-br from-[#07F5A6] via-[#07A6F5] to-[#075AF5]">
         <Routes>
           <Route path="/" element={<Home />} />
           <Route path="/login" element={<Login />} />
@@ -21,6 +22,7 @@ function App() {
           <Route path="/admin" element={<AdminPanel />} />{" "}
           {/*Implementar solo admin */}
         </Routes>
+        <Footer />
       </div>
     </Router>
   );
