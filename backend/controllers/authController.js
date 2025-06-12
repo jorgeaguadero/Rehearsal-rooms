@@ -1,26 +1,47 @@
 import { hash, compare } from "bcryptjs";
 import jwt from "jsonwebtoken";
-import { userRepository } from "../repositories/index.js";
+import * as userRepository from "../repositories/userRepository.js";
 
 export async function register(req, res) {
   try {
-    const { username, email, password, role } = req.body;
+    const { username, email, password, nombre, apellidos, telefono, role } =
+      req.body;
 
-    if (!username || !email || !password) {
+    if (
+      !username ||
+      !email ||
+      !password ||
+      !nombre ||
+      !apellidos ||
+      !telefono
+    ) {
       return res
         .status(400)
         .json({ error: "Todos los campos son obligatorios" });
     }
 
-    const existingUser = await userRepository.findUserByEmail(email);
-    if (existingUser) {
+    const existingEmail = await userRepository.findUserByEmail(email);
+    if (existingEmail) {
       return res.status(400).json({ error: "El email ya está registrado" });
+    }
+    const existingUsername = await userRepository.findUserByUsername(username);
+    if (existingUsername) {
+      return res
+        .status(400)
+        .json({ error: "El nombre de usuario ya está en uso" });
+    }
+    const existingTelefono = await userRepository.findUserByTelefono(telefono);
+    if (existingTelefono) {
+      return res.status(400).json({ error: "El teléfono ya está en uso" });
     }
 
     const userId = await userRepository.createUser({
       username,
       email,
       password,
+      nombre,
+      apellidos,
+      telefono,
       role,
     });
     res
@@ -57,7 +78,18 @@ export async function login(req, res) {
       { expiresIn: "1h" }
     );
 
-    res.json({ token });
+    res.json({
+      token,
+      user: {
+        id: user.id,
+        email: user.email,
+        username: user.username,
+        nombre: user.nombre,
+        apellidos: user.apellidos,
+        telefono: user.telefono,
+        role: user.role,
+      },
+    });
   } catch (error) {
     res.status(500).json({ error: "Error al iniciar sesión" });
   }
