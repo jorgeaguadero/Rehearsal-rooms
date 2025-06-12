@@ -1,3 +1,7 @@
+import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
+import { faLinkedin } from "@fortawesome/free-brands-svg-icons";
+import { faEnvelope } from "@fortawesome/free-solid-svg-icons";
+
 function Footer() {
   return (
     <footer className="w-full bg-[#56df9e] text-black flex flex-col md:flex-row justify-between items-center px-6 py-4 fixed bottom-0 left-0 z-40 shadow-inner">
@@ -7,7 +11,11 @@ function Footer() {
         </span>
       </div>
       <div className="flex gap-4 items-center">
-        <a href="mailto:jorgeaguaderodev@gmail.com" className="hover:underline">
+        <a
+          href="mailto:jorgeaguaderodev@gmail.com"
+          className="hover:underline flex items-center gap-1"
+        >
+          <FontAwesomeIcon icon={faEnvelope} />
           Contacto
         </a>
 
@@ -15,8 +23,9 @@ function Footer() {
           href="https://www.linkedin.com/in/jorgeaguadero/"
           target="_blank"
           rel="noreferrer"
-          className="hover:underline"
+          className="hover:underline flex items-center gap-1"
         >
+          <FontAwesomeIcon icon={faLinkedin} />
           LinkedIn
         </a>
       </div>

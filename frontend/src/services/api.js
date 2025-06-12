@@ -12,4 +12,12 @@ api.interceptors.request.use((config) => {
   return config;
 });
 
+// Comprobar disponibilidad de nombre de usuario
+export const checkUsernameAvailability = async (username) => {
+  const res = await api.get(
+    `/api/users/check-username?username=${encodeURIComponent(username)}`
+  );
+  return res.data.available;
+};
+
 export default api;

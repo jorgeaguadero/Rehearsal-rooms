@@ -1,10 +1,23 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useContext } from "react";
 import api from "../services/api";
+import { UserContext } from "../context/UserContext";
+import { useNavigate } from "react-router-dom";
 
-function BookingForm({ room, onError }) {
-  const [date, setDate] = useState("");
-  const [startHour, setStartHour] = useState(10);
-  const [numHours, setNumHours] = useState(1);
+function BookingForm({ room, booking, onSuccess, onError }) {
+  const { user } = useContext(UserContext);
+  const navigate = useNavigate();
+  const [date, setDate] = useState(
+    booking ? booking.start_time?.slice(0, 10) : ""
+  );
+  const [startHour, setStartHour] = useState(
+    booking ? new Date(booking.start_time).getHours() : 10
+  );
+  const [numHours, setNumHours] = useState(
+    booking
+      ? new Date(booking.end_time).getHours() -
+          new Date(booking.start_time).getHours()
+      : 1
+  );
   const [error, setError] = useState("");
   const [busySlots, setBusySlots] = useState([]);
 
@@ -15,16 +28,29 @@ function BookingForm({ room, onError }) {
         const res = await api.get(`/api/rooms/${room.id}/availability`);
         // Filtrar solo reservas del día seleccionado
         const selectedDay = new Date(date).toISOString().split("T")[0];
-        const busy = res.data.filter((b) =>
-          b.start_time.startsWith(selectedDay)
-        );
+        let busy = res.data.filter((b) => b.start_time.startsWith(selectedDay));
+        // Si estamos editando, excluir la propia reserva
+        if (booking && booking.id) {
+          busy = busy.filter((b) => b.id !== booking.id);
+        }
         setBusySlots(busy);
       } catch {
         setBusySlots([]);
       }
     }
     fetchAvailability();
-  }, [date, room.id]);
+  }, [date, room.id, booking]);
+
+  useEffect(() => {
+    if (booking) {
+      setDate(booking.start_time?.slice(0, 10));
+      setStartHour(new Date(booking.start_time).getHours());
+      setNumHours(
+        new Date(booking.end_time).getHours() -
+          new Date(booking.start_time).getHours()
+      );
+    }
+  }, [booking]);
 
   const maxHour = 22;
   const availableStartHours = Array.from(
@@ -39,6 +65,10 @@ function BookingForm({ room, onError }) {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
+    if (!user) {
+      navigate("/login");
+      return;
+    }
     try {
       const startDate = new Date(
         `${date}T${String(startHour).padStart(2, "0")}:00:00`
@@ -49,19 +79,24 @@ function BookingForm({ room, onError }) {
         start_time: startDate.toISOString(),
         end_time: endDate.toISOString(),
       };
-      await api.post("/api/bookings", payload);
+      if (booking && booking.id) {
+        await api.put(`/api/bookings/${booking.id}`, payload);
+      } else {
+        await api.post("/api/bookings", payload);
+      }
       setError("");
-      // Redirigir al dashboard tras reservar
-      window.location.href = "/dashboard";
+      if (onSuccess) onSuccess();
     } catch (err) {
-      const errorMsg = err.response?.data?.error || "Error al crear la reserva";
+      const errorMsg =
+        err.response?.data?.error ||
+        (booking ? "Error al editar la reserva" : "Error al crear la reserva");
       setError(errorMsg);
       if (errorMsg.includes("no está disponible")) {
         alert(
           "La sala no está disponible en ese horario. Por favor, elige otro tramo."
         );
       }
-      onError(errorMsg);
+      if (onError) onError(errorMsg);
     }
   };
 
@@ -95,13 +130,13 @@ function BookingForm({ room, onError }) {
   return (
     <div>
       {error && <p className="text-red-500 mb-4">{error}</p>}
-      <h2 className="text-2xl font-semibold text-gray-800 mb-4">
-        Reservar {room.name}
+      <h2 className="text-2xl font-semibold text-black mb-4 text-center">
+        {booking ? "Editar reserva" : `Reservar ${room.name}`}
       </h2>
-      <p className="text-gray-600 mb-4">{room.description}</p>
+      <p className="text-gray-600 mb-4 text-center">{room.description}</p>
       <form onSubmit={handleSubmit} className="max-w-md">
         <div className="mb-4">
-          <label htmlFor="date" className="block text-gray-700 mb-2">
+          <label htmlFor="date" className="block text-black mb-2 font-semibold">
             Fecha
           </label>
           <input
@@ -110,12 +145,15 @@ function BookingForm({ room, onError }) {
             value={date}
             min={new Date().toISOString().split("T")[0]}
             onChange={(e) => setDate(e.target.value)}
-            className="w-full p-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+            className="w-full p-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-[#68df9f] border-[#68df9f] bg-white text-black placeholder-gray-400"
             required
           />
         </div>
         <div className="mb-4">
-          <label htmlFor="startHour" className="block text-gray-700 mb-2">
+          <label
+            htmlFor="startHour"
+            className="block text-black mb-2 font-semibold"
+          >
             Hora de entrada
           </label>
           <select
@@ -125,7 +163,7 @@ function BookingForm({ room, onError }) {
               setStartHour(Number(e.target.value));
               setNumHours(1);
             }}
-            className="w-full p-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+            className="w-full p-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-[#68df9f] border-[#68df9f] bg-white text-black"
           >
             {availableStartHours.map((h) => (
               <option
@@ -142,14 +180,17 @@ function BookingForm({ room, onError }) {
           </select>
         </div>
         <div className="mb-4">
-          <label htmlFor="numHours" className="block text-gray-700 mb-2">
+          <label
+            htmlFor="numHours"
+            className="block text-black mb-2 font-semibold"
+          >
             Número de horas
           </label>
           <select
             id="numHours"
             value={numHours}
             onChange={(e) => setNumHours(Number(e.target.value))}
-            className="w-full p-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+            className="w-full p-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-[#68df9f] border-[#68df9f] bg-white text-black"
           >
             {availableNumHours.map((h) => (
               <option key={h} value={h}>
@@ -159,16 +200,16 @@ function BookingForm({ room, onError }) {
           </select>
         </div>
         {isTramoOcupado() && (
-          <p className="text-red-500 mb-2 font-semibold">
+          <p className="text-red-500 mb-2 font-semibold text-center">
             Este tramo está ocupado. Elige otro horario.
           </p>
         )}
         <button
           type="submit"
-          className="w-full bg-blue-600 text-white p-2 rounded-md hover:bg-blue-700"
+          className="w-full bg-[#68df9f] text-white p-2 rounded-md hover:bg-[#56df9e] font-semibold shadow-md transition"
           disabled={isTramoOcupado()}
         >
-          Confirmar Reserva
+          {booking ? "Guardar cambios" : "Confirmar Reserva"}
         </button>
       </form>
     </div>

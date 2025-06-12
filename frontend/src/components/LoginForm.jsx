@@ -7,8 +7,19 @@ function LoginForm() {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [error, setError] = useState("");
+  const [touched, setTouched] = useState({});
   const navigate = useNavigate();
   const { login } = useContext(UserContext);
+
+  const validate = () => {
+    const errors = {};
+    if (!email.trim()) errors.email = "El email es obligatorio";
+    else if (!/^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(email))
+      errors.email = "Email inválido";
+    if (!password) errors.password = "La contraseña es obligatoria";
+    return errors;
+  };
+  const errors = validate();
 
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -42,9 +53,13 @@ function LoginForm() {
               id="email"
               value={email}
               onChange={(e) => setEmail(e.target.value)}
+              onBlur={() => setTouched({ ...touched, email: true })}
               className="w-full p-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-[#68df9f] border-[#68df9f] bg-white text-black placeholder-gray-400"
               required
             />
+            {touched.email && errors.email && (
+              <p className="text-red-500 text-sm mt-1">{errors.email}</p>
+            )}
           </div>
           <div className="mb-6">
             <label
@@ -58,17 +73,31 @@ function LoginForm() {
               id="password"
               value={password}
               onChange={(e) => setPassword(e.target.value)}
+              onBlur={() => setTouched({ ...touched, password: true })}
               className="w-full p-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-[#68df9f] border-[#68df9f] bg-white text-black placeholder-gray-400"
               required
             />
+            {touched.password && errors.password && (
+              <p className="text-red-500 text-sm mt-1">{errors.password}</p>
+            )}
           </div>
           <button
             type="submit"
             className="w-full bg-[#68df9f] text-white p-2 rounded-md hover:bg-[#56df9e] font-semibold shadow-md transition"
+            disabled={Object.keys(errors).length > 0}
           >
             Iniciar Sesión
           </button>
         </form>
+        <div className="mt-4 text-center">
+          <span className="text-black">¿No tienes cuenta? </span>
+          <a
+            href="/register"
+            className="text-blue-600 hover:underline font-semibold"
+          >
+            Regístrate aquí
+          </a>
+        </div>
       </div>
     </div>
   );
