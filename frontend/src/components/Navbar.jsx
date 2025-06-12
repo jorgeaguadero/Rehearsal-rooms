@@ -1,66 +1,102 @@
-import { useEffect, useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
+import { useContext } from "react";
+import { UserContext } from "../context/UserContext";
 
 function Navbar() {
-  const [user, setUser] = useState(null);
+  const { user, logout } = useContext(UserContext);
   const navigate = useNavigate();
 
-  useEffect(() => {
-    const token = localStorage.getItem("token");
-    if (token) {
-      try {
-        const payload = JSON.parse(atob(token.split(".")[1]));
-        setUser(payload);
-      } catch {
-        setUser(null);
-      }
-    } else {
-      setUser(null);
-    }
-  }, []);
-
   const handleLogout = () => {
-    localStorage.removeItem("token");
-    setUser(null);
-    navigate("/login");
+    logout();
+    navigate("/");
   };
 
   return (
-    <nav className="bg-gray-800 p-4">
-      <div className="container mx-auto flex justify-between items-center">
-        <Link to="/" className="text-white text-xl font-bold">
+    <nav className="w-full fixed top-0 left-0 z-50 bg-[#68df9f] flex items-center justify-between px-6 h-16 shadow-md">
+      <div
+        className="flex items-center gap-2 cursor-pointer"
+        onClick={() => navigate("/")}
+      >
+        <span className="text-2xl font-bold text-black tracking-tight">
           Rehearsal Rooms
+        </span>
+      </div>
+      <div className="flex gap-4 items-center">
+        <Link to="/rooms" className="text-black font-semibold hover:underline">
+          Salas
         </Link>
-        <div className="space-x-4">
-          {!user && (
+        {user ? (
+          user.role === "admin" ? (
             <>
-              <Link to="/login" className="text-white hover:text-gray-200">
-                Login
-              </Link>
-              <Link to="/register" className="text-white hover:text-gray-200">
-                Register
-              </Link>
-            </>
-          )}
-          {user && (
-            <>
-              <Link to="/bookings" className="text-white hover:text-gray-200">
+              <Link
+                to="/bookings"
+                className="text-black font-semibold hover:underline"
+              >
                 Reservas
               </Link>
-              {user.role === "admin" && (
-                <Link to="/admin" className="text-white hover:text-gray-200">
-                  Admin
-                </Link>
-              )}
+              <Link
+                to="/users"
+                className="text-black font-semibold hover:underline"
+              >
+                Usuarios
+              </Link>
+              <Link
+                to="/admin"
+                className="text-black font-semibold hover:underline"
+              >
+                Admin
+              </Link>
+              <Link
+                to="/profile"
+                className="text-black font-semibold hover:underline"
+              >
+                Perfil
+              </Link>
               <button
                 onClick={handleLogout}
-                className="text-white hover:text-gray-200 ml-2"
+                className="text-black font-semibold hover:underline bg-transparent border-none cursor-pointer"
               >
                 Logout
               </button>
             </>
-          )}
-        </div>
+          ) : (
+            <>
+              <Link
+                to="/bookings"
+                className="text-black font-semibold hover:underline"
+              >
+                Reservas
+              </Link>
+              <Link
+                to="/profile"
+                className="text-black font-semibold hover:underline"
+              >
+                Perfil
+              </Link>
+              <button
+                onClick={handleLogout}
+                className="text-black font-semibold hover:underline bg-transparent border-none cursor-pointer"
+              >
+                Logout
+              </button>
+            </>
+          )
+        ) : (
+          <>
+            <Link
+              to="/login"
+              className="text-black font-semibold hover:underline"
+            >
+              Login
+            </Link>
+            <Link
+              to="/register"
+              className="text-black font-semibold hover:underline"
+            >
+              Register
+            </Link>
+          </>
+        )}
       </div>
     </nav>
   );

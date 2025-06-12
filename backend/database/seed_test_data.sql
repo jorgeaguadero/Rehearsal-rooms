@@ -1,3 +1,4 @@
+SET NAMES utf8mb4;
 USE rehearsal_rooms;
 
 -- Insertar salas de prueba

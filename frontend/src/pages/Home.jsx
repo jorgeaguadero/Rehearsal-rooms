@@ -1,25 +1,27 @@
 import { Link } from "react-router-dom";
-import Navbar from "../components/Navbar";
+import principalCover from "../assets/principalCover.webp";
 
 function Home() {
   return (
-    <div>
-      <Navbar />
-      <div className="container mx-auto p-6 text-center">
-        <h1 className="text-3xl font-bold text-gray-800">
-          Bienvenido a Rehearsal Rooms
+    <main
+      className="w-full min-h-screen flex items-center justify-center bg-cover bg-center"
+      style={{
+        backgroundImage: `linear-gradient(rgba(0,0,0,0.5),rgba(0,0,0,0.5)), url(${principalCover})`,
+        filter: "grayscale(60%)",
+      }}
+    >
+      <section className="flex flex-col justify-center items-center w-full h-full">
+        <h1 className="text-5xl md:text-7xl font-extrabold text-white drop-shadow-lg text-center">
+          BIENVENIDO A <span className="text-[#68df9f]">REHEARSAL ROOMS</span>
         </h1>
-        <p className="mt-4 text-gray-600">
-          Reserva salas de ensayo de forma fácil y rápida.
-        </p>
         <Link
           to="/rooms"
-          className="mt-6 inline-block bg-blue-600 text-white px-6 py-3 rounded-md hover:bg-blue-700"
+          className="mt-8 bg-blue-600 text-white px-8 py-4 rounded-lg text-xl font-semibold shadow-lg hover:bg-blue-700 transition"
         >
           Ver Salas
         </Link>
-      </div>
-    </div>
+      </section>
+    </main>
   );
 }
 

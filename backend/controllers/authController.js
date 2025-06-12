@@ -46,7 +46,7 @@ export async function login(req, res) {
       return res.status(401).json({ error: "Credenciales inválidas" });
     }
 
-    const isMatch = await compare(password, user.password);
+    const isMatch = await compare(password, user.passwordHash);
     if (!isMatch) {
       return res.status(401).json({ error: "Credenciales inválidas" });
     }
@@ -57,7 +57,15 @@ export async function login(req, res) {
       { expiresIn: "1h" }
     );
 
-    res.json({ token });
+    res.json({
+      token,
+      user: {
+        id: user.id,
+        email: user.email,
+        username: user.username,
+        role: user.role,
+      },
+    });
   } catch (error) {
     res.status(500).json({ error: "Error al iniciar sesión" });
   }

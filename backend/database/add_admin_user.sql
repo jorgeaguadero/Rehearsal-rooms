@@ -1,3 +1,4 @@
+SET NAMES utf8mb4;
 USE rehearsal_rooms;
 
 -- Insertar usuario admin
@@ -5,7 +6,7 @@ INSERT INTO users (username, email, password, role)
 VALUES (
     'admin',
     'admin@example.com',
-    '$2b$10$eL5SLumJ5POf1ZJfac4cYukLm8jgTnZbA8WxgBEqcGxej35TLK0f6', -- bcrypt hash de 'admin123'
+    '$2b$10$uEhNBPqay2AIPvMUj1eci.Gd6kRcdSeyT5UPQB6tkf6vYkujaYkk.', -- hash de Admin123!
     'admin'
 );
 
@@ -14,6 +15,6 @@ INSERT INTO users (username, email, password, role)
 VALUES (
     'user',
     'user@example.com',
-    '$2b$10$I4yHX9vHxlhAw0S0hXB4tuL30SN9NYE6i8N1Ww6HLowzp.eV/354.', -- bcrypt hash de 'user123'
+    '$2b$10$bC3Tv3aw36PFrgfaGSYCE.Q0zIF5zdscoGZtSD2Z.gQBANW/Af9oa', -- hash de User123!
     'user'
 );
