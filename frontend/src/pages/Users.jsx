@@ -20,6 +20,38 @@ function Users() {
   const inputRef = useRef();
   const [showDropdown, setShowDropdown] = useState(false);
   const [countryQuery, setCountryQuery] = useState("");
+  const [showPasswordModal, setShowPasswordModal] = useState(false);
+  const [passwordUser, setPasswordUser] = useState(null);
+  const [newPassword, setNewPassword] = useState("");
+  const [passwordError, setPasswordError] = useState("");
+  const [passwordLoading, setPasswordLoading] = useState(false);
+  const [, setPasswordSuccess] = useState("");
+  // Reglas de validación de contraseña
+  const passwordRules = [
+    {
+      label: "Al menos 8 caracteres",
+      test: (pw) => pw.length >= 8,
+    },
+    {
+      label: "Una mayúscula",
+      test: (pw) => /[A-Z]/.test(pw),
+    },
+    {
+      label: "Una minúscula",
+      test: (pw) => /[a-z]/.test(pw),
+    },
+    {
+      label: "Un número",
+      test: (pw) => /\d/.test(pw),
+    },
+    {
+      label: "Un carácter especial",
+      test: (pw) => /[!@#$%^&*()_+\-=[\]{};':"\\|,.<>/?]/.test(pw),
+    },
+  ];
+  const [passwordTouched, setPasswordTouched] = useState(false);
+  const [showPasswordSuccessModal, setShowPasswordSuccessModal] =
+    useState(false);
 
   useEffect(() => {
     if (!user || user.role !== "admin") return;
@@ -73,12 +105,6 @@ function Users() {
     setSuccess("");
     setCountryQuery("");
     setShowDropdown(false);
-    // Debug: mostrar datos iniciales
-    console.log("[DEBUG] editData al abrir modal:", {
-      ...u,
-      prefix,
-      phoneNumber,
-    });
   };
 
   const handleEditChange = (e) => {
@@ -132,6 +158,43 @@ function Users() {
       setEditError(err.response?.data?.error || "Error al actualizar usuario");
     } finally {
       setEditLoading(false);
+    }
+  };
+
+  // Botón para abrir modal de cambio de contraseña
+  const openPasswordModal = (u) => {
+    setPasswordUser(u);
+    setShowPasswordModal(true);
+    setNewPassword("");
+    setPasswordError("");
+    setPasswordSuccess("");
+  };
+
+  // Lógica para cambiar la contraseña
+  const handlePasswordChange = async (e) => {
+    e.preventDefault();
+    setPasswordError("");
+    setPasswordSuccess("");
+    setPasswordTouched(true);
+    const errors = passwordRules.filter((rule) => !rule.test(newPassword));
+    if (errors.length > 0) {
+      setPasswordError("La contraseña no cumple los requisitos");
+      return;
+    }
+    setPasswordLoading(true);
+    try {
+      await api.patch(`/api/users/${passwordUser.id}/password`, {
+        newPassword,
+      });
+      setPasswordSuccess("Contraseña actualizada correctamente");
+      setNewPassword("");
+      setShowPasswordSuccessModal(true);
+    } catch (err) {
+      setPasswordError(
+        err.response?.data?.error || "Error al cambiar la contraseña"
+      );
+    } finally {
+      setPasswordLoading(false);
     }
   };
 
@@ -440,8 +503,107 @@ function Users() {
               >
                 Cancelar
               </button>
+              <button
+                type="button"
+                className="w-full bg-yellow-500 text-white p-2 rounded-md hover:bg-yellow-600 font-semibold shadow-md transition"
+                onClick={() => openPasswordModal(editUser)}
+                disabled={editLoading}
+              >
+                Cambiar contraseña
+              </button>
             </div>
           </form>
+        )}
+      </Modal>
+      {/* Modal para cambiar contraseña */}
+      <Modal
+        open={showPasswordModal}
+        title={`Cambiar contraseña de ${passwordUser?.username || "usuario"}`}
+        onClose={() => {
+          setShowPasswordModal(false);
+          setPasswordTouched(false);
+          setPasswordError("");
+          setPasswordSuccess("");
+        }}
+      >
+        <form onSubmit={handlePasswordChange} className="space-y-4">
+          <div>
+            <label className="block text-black mb-1 font-semibold">
+              Nueva contraseña
+            </label>
+            <input
+              type="password"
+              value={newPassword}
+              onChange={(e) => setNewPassword(e.target.value)}
+              onBlur={() => setPasswordTouched(true)}
+              className="w-full p-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-[#68df9f] border-[#68df9f] bg-white text-black placeholder-gray-400"
+              required
+            />
+            <ul className="text-xs mt-2 mb-1">
+              {passwordRules.map((rule, i) => (
+                <li
+                  key={i}
+                  className={
+                    rule.test(newPassword)
+                      ? "text-green-600 line-through"
+                      : "text-gray-500"
+                  }
+                >
+                  {rule.label}
+                </li>
+              ))}
+            </ul>
+            {passwordTouched && passwordError && (
+              <p className="text-red-500 text-sm mt-1">{passwordError}</p>
+            )}
+          </div>
+          <div className="flex gap-2">
+            <button
+              type="submit"
+              className="w-full bg-[#68df9f] text-white p-2 rounded-md hover:bg-[#56df9e] font-semibold shadow-md transition"
+              disabled={passwordLoading}
+            >
+              {passwordLoading ? "Cambiando..." : "Guardar"}
+            </button>
+            <button
+              type="button"
+              className="w-full bg-gray-400 text-white p-2 rounded-md hover:bg-gray-500 font-semibold shadow-md transition"
+              onClick={() => {
+                setShowPasswordModal(false);
+                setPasswordTouched(false);
+                setPasswordError("");
+                setPasswordSuccess("");
+              }}
+              disabled={passwordLoading}
+            >
+              Cancelar
+            </button>
+          </div>
+        </form>
+        {/* Modal de éxito */}
+        {showPasswordSuccessModal && (
+          <div className="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-40">
+            <div className="bg-white rounded-lg shadow-lg p-6 max-w-sm w-full text-center">
+              <h3 className="text-xl font-bold mb-4 text-black">
+                Contraseña cambiada
+              </h3>
+              <p className="text-black mb-4">
+                La contraseña se ha cambiado correctamente.
+              </p>
+              <button
+                className="bg-[#68df9f] text-white px-4 py-2 rounded-md font-semibold shadow-md transition"
+                onClick={() => {
+                  setShowPasswordSuccessModal(false);
+                  setShowPasswordModal(false);
+                  setPasswordTouched(false);
+                  setPasswordError("");
+                  setPasswordSuccess("");
+                }}
+              >
+                Cerrar
+              </button>
+            </div>
+          </div>
         )}
       </Modal>
     </div>

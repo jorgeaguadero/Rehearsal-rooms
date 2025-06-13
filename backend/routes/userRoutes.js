@@ -18,6 +18,14 @@ router.put(
   userController.updateUserById
 );
 
+// Cambiar contraseña de cualquier usuario (solo admin)
+router.patch(
+  "/:id/password",
+  authenticate,
+  restrictToAdmin,
+  userController.adminUpdateUserPassword
+);
+
 // Comprobar disponibilidad de nombre de usuario (validación en tiempo real)
 router.get("/check-username", userController.checkUsernameAvailability);
 

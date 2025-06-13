@@ -54,6 +54,11 @@ export async function findUserByTelefono(telefono) {
   return users[0] || null;
 }
 
+export async function findUserById(id) {
+  const [users] = await pool.query("SELECT * FROM users WHERE id = ?", [id]);
+  return users[0] || null;
+}
+
 export async function updateUserProfile(id, { username, telefono }) {
   const [result] = await pool.query(
     "UPDATE users SET username = ?, telefono = ? WHERE id = ?",
@@ -69,6 +74,14 @@ export async function updateUserById(
   const [result] = await pool.query(
     `UPDATE users SET username = ?, email = ?, nombre = ?, apellidos = ?, telefono = ?, role = ? WHERE id = ?`,
     [username, email, nombre, apellidos, telefono, role, id]
+  );
+  return result.affectedRows > 0;
+}
+
+export async function updateUserPassword(id, hashedPassword) {
+  const [result] = await pool.query(
+    "UPDATE users SET password = ? WHERE id = ?",
+    [hashedPassword, id]
   );
   return result.affectedRows > 0;
 }

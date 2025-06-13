@@ -1,4 +1,5 @@
 import * as userRepository from "../repositories/userRepository.js";
+import { hash } from "bcryptjs";
 
 // Obtener todos los usuarios (solo admin)
 export async function getAllUsers(req, res) {
@@ -94,6 +95,40 @@ export async function updateUserById(req, res) {
     res.json({ message: "Usuario actualizado correctamente" });
   } catch (error) {
     res.status(500).json({ error: "Error al actualizar el usuario" });
+  }
+}
+
+// Cambiar contraseña de cualquier usuario (solo admin)
+export async function adminUpdateUserPassword(req, res) {
+  try {
+    if (req.user.role !== "admin") {
+      return res
+        .status(403)
+        .json({
+          error:
+            "Solo el administrador puede cambiar contraseñas de otros usuarios",
+        });
+    }
+    const { id } = req.params;
+    const { newPassword } = req.body;
+    if (!newPassword || newPassword.length < 8) {
+      return res
+        .status(400)
+        .json({
+          error: "La nueva contraseña debe tener al menos 8 caracteres",
+        });
+    }
+    const user = await userRepository.findUserById(id);
+    if (!user) {
+      return res.status(404).json({ error: "Usuario no encontrado" });
+    }
+    const hashed = await hash(newPassword, 10);
+    await userRepository.updateUserPassword(id, hashed);
+    res.json({
+      message: "Contraseña actualizada correctamente por el administrador",
+    });
+  } catch (error) {
+    res.status(500).json({ error: "Error al actualizar la contraseña" });
   }
 }
 

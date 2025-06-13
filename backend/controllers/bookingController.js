@@ -33,8 +33,6 @@ export async function createBooking(req, res) {
     const { room_id, start_time, end_time } = req.body;
     const userId = req.user.id;
 
-    console.log("Creando reserva:", { room_id, start_time, end_time, userId });
-
     if (!room_id || !start_time || !end_time) {
       return res
         .status(400)
@@ -45,21 +43,17 @@ export async function createBooking(req, res) {
     const endDate = new Date(end_time);
 
     if (isNaN(startDate) || isNaN(endDate)) {
-      console.log("Fechas inválidas:", { start_time, end_time });
       return res.status(400).json({ error: "Formato de fechas inválido" });
     }
 
     if (startDate >= endDate) {
-      return res
-        .status(400)
-        .json({
-          error: "La hora de fin debe ser posterior a la hora de inicio",
-        });
+      return res.status(400).json({
+        error: "La hora de fin debe ser posterior a la hora de inicio",
+      });
     }
 
     const room = await roomRepository.getRoomById(room_id);
     if (!room) {
-      console.log("Sala no encontrada:", { room_id });
       return res.status(404).json({ error: "Sala no encontrada" });
     }
 
@@ -69,7 +63,6 @@ export async function createBooking(req, res) {
       endDate
     );
     if (!isAvailable) {
-      console.log("Conflicto de horario:", { room_id, start_time, end_time });
       return res
         .status(409)
         .json({ error: "La sala no está disponible en ese horario" });
@@ -84,7 +77,6 @@ export async function createBooking(req, res) {
 
     res.status(201).json({ message: "Reserva creada con éxito", id });
   } catch (error) {
-    console.error("Error al crear reserva:", error);
     res
       .status(500)
       .json({ error: "Error al crear la reserva", details: error.message });
@@ -98,16 +90,6 @@ export async function updateBooking(req, res) {
     const userId = req.user.id;
     const isAdmin = req.user.role === "admin";
 
-    console.log("Actualizando reserva:", {
-      id,
-      room_id,
-      start_time,
-      end_time,
-      status,
-      userId,
-      isAdmin,
-    });
-
     if (!room_id || !start_time || !end_time) {
       return res
         .status(400)
@@ -118,21 +100,17 @@ export async function updateBooking(req, res) {
     const endDate = new Date(end_time);
 
     if (isNaN(startDate) || isNaN(endDate)) {
-      console.log("Fechas inválidas:", { start_time, end_time });
       return res.status(400).json({ error: "Formato de fechas inválido" });
     }
 
     if (startDate >= endDate) {
-      return res
-        .status(400)
-        .json({
-          error: "La hora de fin debe ser posterior a la hora de inicio",
-        });
+      return res.status(400).json({
+        error: "La hora de fin debe ser posterior a la hora de inicio",
+      });
     }
 
     const room = await roomRepository.getRoomById(room_id);
     if (!room) {
-      console.log("Sala no encontrada:", { room_id });
       return res.status(404).json({ error: "Sala no encontrada" });
     }
 
@@ -143,7 +121,6 @@ export async function updateBooking(req, res) {
       id
     );
     if (!isAvailable) {
-      console.log("Conflicto de horario:", { room_id, start_time, end_time });
       return res
         .status(409)
         .json({ error: "La sala no está disponible en ese horario" });
@@ -156,10 +133,7 @@ export async function updateBooking(req, res) {
       isAdmin
     );
 
-    console.log("Resultado de la actualización:", { updated });
-
     if (!updated) {
-      console.log("No se pudo actualizar:", { id, userId, isAdmin });
       return res
         .status(404)
         .json({ error: "Reserva no encontrada o no autorizada" });
@@ -167,13 +141,10 @@ export async function updateBooking(req, res) {
 
     res.json({ message: "Reserva actualizada con éxito" });
   } catch (error) {
-    console.error("Error al actualizar reserva:", error);
-    res
-      .status(500)
-      .json({
-        error: "Error al actualizar la reserva",
-        details: error.message,
-      });
+    res.status(500).json({
+      error: "Error al actualizar la reserva",
+      details: error.message,
+    });
   }
 }
 
@@ -183,15 +154,12 @@ export async function cancelBooking(req, res) {
     const userId = req.user.id;
     const isAdmin = req.user.role === "admin";
 
-    console.log("Cancelando reserva:", { id, userId, isAdmin });
-
     const cancelled = await bookingRepository.cancelBooking(
       id,
       userId,
       isAdmin
     );
     if (!cancelled) {
-      console.log("No se pudo cancelar:", { id, userId, isAdmin });
       return res
         .status(404)
         .json({ error: "Reserva no encontrada o no autorizada" });
@@ -199,7 +167,6 @@ export async function cancelBooking(req, res) {
 
     res.json({ message: "Reserva cancelada con éxito" });
   } catch (error) {
-    console.error("Error al cancelar reserva:", error);
     res.status(500).json({ error: "Error al cancelar la reserva" });
   }
 }

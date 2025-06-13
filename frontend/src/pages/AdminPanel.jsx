@@ -29,7 +29,6 @@ function AdminPanel() {
     const fetchRooms = async () => {
       try {
         const response = await api.get("/api/rooms");
-        console.log("Respuesta /api/rooms:", response.data);
         setRooms(response.data);
       } catch (err) {
         setError(err.response?.data?.error || "Error al cargar las salas");
@@ -43,23 +42,44 @@ function AdminPanel() {
     setNewRoom({ ...newRoom, [e.target.name]: e.target.value });
   };
 
+  const MAX_IMAGE_SIZE_MB = 2; // Puedes ajustar el límite aquí
+
   const handleFileChange = (e) => {
-    setImageFile(e.target.files[0]);
+    const file = e.target.files[0];
+    if (file) {
+      if (!file.type.startsWith("image/")) {
+        setError("El archivo debe ser una imagen (jpg, png, etc.)");
+        setImageFile(null);
+        return;
+      }
+      if (file.size > MAX_IMAGE_SIZE_MB * 1024 * 1024) {
+        setError(`La imagen no puede superar los ${MAX_IMAGE_SIZE_MB} MB`);
+        setImageFile(null);
+        return;
+      }
+      setError("");
+      setImageFile(file);
+    }
   };
 
   const handleCreateRoom = async (e) => {
     e.preventDefault();
+    if (
+      !newRoom.name ||
+      !newRoom.capacity ||
+      !newRoom.price_per_hour ||
+      !imageFile
+    ) {
+      setError("Todos los campos, incluida la imagen, son obligatorios");
+      return;
+    }
     try {
       const formData = new FormData();
       formData.append("name", newRoom.name);
       formData.append("description", newRoom.description);
       formData.append("capacity", newRoom.capacity);
       formData.append("price_per_hour", newRoom.price_per_hour);
-      if (imageFile) {
-        formData.append("image", imageFile);
-      } else if (newRoom.image) {
-        formData.append("image", newRoom.image);
-      }
+      formData.append("image", imageFile);
       await api.post("/api/rooms", formData, {
         headers: { "Content-Type": "multipart/form-data" },
       });
@@ -92,7 +112,21 @@ function AdminPanel() {
   };
 
   const handleEditFileChange = (e) => {
-    setEditImageFile(e.target.files[0]);
+    const file = e.target.files[0];
+    if (file) {
+      if (!file.type.startsWith("image/")) {
+        setError("El archivo debe ser una imagen (jpg, png, etc.)");
+        setEditImageFile(null);
+        return;
+      }
+      if (file.size > MAX_IMAGE_SIZE_MB * 1024 * 1024) {
+        setError(`La imagen no puede superar los ${MAX_IMAGE_SIZE_MB} MB`);
+        setEditImageFile(null);
+        return;
+      }
+      setError("");
+      setEditImageFile(file);
+    }
   };
 
   const handleEditCancel = () => {
@@ -230,6 +264,7 @@ function AdminPanel() {
                 accept="image/*"
                 onChange={handleFileChange}
                 className="border p-2 w-full rounded mt-1 text-black"
+                required
               />
             </label>
             <div className="flex gap-2 mt-2">
@@ -304,28 +339,28 @@ function AdminPanel() {
                               encType="multipart/form-data"
                               className="flex flex-col gap-2"
                             >
-                              <label className="text-left font-medium">
+                              <label className="text-left font-medium text-black">
                                 Nombre
                                 <input
                                   name="name"
                                   value={editData.name || ""}
                                   onChange={handleEditInputChange}
                                   placeholder="Nombre"
-                                  className="border p-2 w-full rounded mt-1"
+                                  className="border p-2 w-full rounded mt-1 focus:outline-none focus:ring-2 focus:ring-[#68df9f] border-[#68df9f] bg-white text-black"
                                   required
                                 />
                               </label>
-                              <label className="text-left font-medium">
+                              <label className="text-left font-medium text-black">
                                 Descripción
                                 <input
                                   name="description"
                                   value={editData.description || ""}
                                   onChange={handleEditInputChange}
                                   placeholder="Descripción"
-                                  className="border p-2 w-full rounded mt-1"
+                                  className="border p-2 w-full rounded mt-1 focus:outline-none focus:ring-2 focus:ring-[#68df9f] border-[#68df9f] bg-white text-black"
                                 />
                               </label>
-                              <label className="text-left font-medium">
+                              <label className="text-left font-medium text-black">
                                 Capacidad
                                 <input
                                   name="capacity"
@@ -333,11 +368,11 @@ function AdminPanel() {
                                   onChange={handleEditInputChange}
                                   placeholder="Capacidad"
                                   type="number"
-                                  className="border p-2 w-full rounded mt-1"
+                                  className="border p-2 w-full rounded mt-1 focus:outline-none focus:ring-2 focus:ring-[#68df9f] border-[#68df9f] bg-white text-black"
                                   required
                                 />
                               </label>
-                              <label className="text-left font-medium">
+                              <label className="text-left font-medium text-black">
                                 Precio/hora
                                 <input
                                   name="price_per_hour"
@@ -346,30 +381,30 @@ function AdminPanel() {
                                   placeholder="Precio/hora"
                                   type="number"
                                   step="0.01"
-                                  className="border p-2 w-full rounded mt-1"
+                                  className="border p-2 w-full rounded mt-1 focus:outline-none focus:ring-2 focus:ring-[#68df9f] border-[#68df9f] bg-white text-black"
                                   required
                                 />
                               </label>
-                              <label className="text-left font-medium">
+                              <label className="text-left font-medium text-black">
                                 Imagen
                                 <input
                                   type="file"
                                   accept="image/*"
                                   onChange={handleEditFileChange}
-                                  className="border p-2 w-full rounded mt-1"
+                                  className="border p-2 w-full rounded mt-1 focus:outline-none focus:ring-2 focus:ring-[#68df9f] border-[#68df9f] bg-white text-black"
                                 />
                               </label>
                               <div className="flex gap-2 mt-2">
                                 <button
                                   type="submit"
-                                  className="bg-blue-600 text-white px-3 py-1 rounded hover:bg-blue-700"
+                                  className="bg-[#68df9f] text-white px-3 py-1 rounded hover:bg-[#56df9e] font-semibold shadow-md transition"
                                 >
                                   Guardar
                                 </button>
                                 <button
                                   type="button"
                                   onClick={handleEditCancel}
-                                  className="bg-gray-400 text-white px-3 py-1 rounded"
+                                  className="bg-gray-400 text-white px-3 py-1 rounded font-semibold shadow-md transition"
                                 >
                                   Cancelar
                                 </button>

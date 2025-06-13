@@ -50,16 +50,13 @@ function Bookings() {
   }, [user]);
 
   useEffect(() => {
-    // Obtener todas las salas al cargar
     api.get("/api/rooms").then((res) => setRooms(res.data));
   }, []);
 
-  // Cerrar el formulario si la ruta cambia y no hay roomId ni edición
   useEffect(() => {
     if (!roomId && showForm && !editBooking) setShowForm(false);
   }, [location.pathname, roomId, showForm, editBooking]);
 
-  // Nuevo filtro para reservas pasadas
   const now = new Date();
   const filteredBookings = bookings
     .filter((b) => b.status !== "cancelled")
@@ -68,7 +65,6 @@ function Bookings() {
       return showHistory ? end < now : end >= now;
     });
 
-  // Paginación
   const [page, setPage] = useState(1);
   const [rowsPerPage] = useState(7);
   const totalPages = Math.ceil(filteredBookings.length / rowsPerPage);
@@ -84,7 +80,6 @@ function Bookings() {
       </div>
     );
 
-  // Si hay roomId, mostrar solo el formulario centrado
   if (showForm && room) {
     return (
       <div className="flex justify-center items-center min-h-screen bg-[#f7fafc]">
@@ -141,16 +136,16 @@ function Bookings() {
               <thead>
                 <tr className="bg-[#68df9f] text-white">
                   <th className="p-2 text-black min-w-[120px]">Sala</th>
-                  {isAdmin && (
+                  {isAdmin ? (
                     <th className="p-2 text-black min-w-[120px]">Usuario</th>
-                  )}
+                  ) : null}
                   <th className="p-2 text-black min-w-[110px]">Fecha</th>
                   <th className="p-2 text-black min-w-[100px]">Entrada</th>
                   <th className="p-2 text-black min-w-[100px]">Salida</th>
                   <th className="p-2 text-black min-w-[110px]">Precio total</th>
-                  {!showHistory && (
+                  {!showHistory ? (
                     <th className="p-2 text-black min-w-[130px]">Acciones</th>
-                  )}
+                  ) : null}
                 </tr>
               </thead>
               <tbody>
@@ -162,7 +157,6 @@ function Bookings() {
                     name: b.room_id,
                     price_per_hour: 0,
                   };
-                  // Calcular precio total
                   const horas = (end - start) / (1000 * 60 * 60);
                   const precio = sala.price_per_hour
                     ? horas * sala.price_per_hour
@@ -226,7 +220,6 @@ function Bookings() {
               </tbody>
             </table>
           </div>
-          {/* Paginación */}
           <div className="flex justify-center items-center gap-2 mt-6">
             <button
               className="px-3 py-1 rounded bg-gray-200 text-black font-semibold disabled:opacity-50"

@@ -94,3 +94,37 @@ export async function login(req, res) {
     res.status(500).json({ error: "Error al iniciar sesión" });
   }
 }
+
+export async function updatePassword(req, res) {
+  try {
+    const userId = req.user.id;
+    const { currentPassword, newPassword } = req.body;
+    if (!currentPassword || !newPassword) {
+      return res.status(400).json({
+        error: "Debes proporcionar la contraseña actual y la nueva contraseña",
+      });
+    }
+    const user = await userRepository.findUserById(userId);
+    if (!user) {
+      return res.status(404).json({ error: "Usuario no encontrado" });
+    }
+    const isMatch = await compare(currentPassword, user.password);
+    if (!isMatch) {
+      return res
+        .status(401)
+        .json({ error: "La contraseña actual no es correcta" });
+    }
+    if (newPassword.length < 8) {
+      return res
+        .status(400)
+        .json({
+          error: "La nueva contraseña debe tener al menos 8 caracteres",
+        });
+    }
+    const hashed = await hash(newPassword, 10);
+    await userRepository.updateUserPassword(userId, hashed);
+    res.json({ message: "Contraseña actualizada correctamente" });
+  } catch (error) {
+    res.status(500).json({ error: "Error al actualizar la contraseña" });
+  }
+}

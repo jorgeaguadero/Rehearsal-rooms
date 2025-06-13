@@ -1,12 +1,14 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useContext } from "react";
 import { Link } from "react-router-dom";
 import RoomCard from "../components/RoomCard";
 import api from "../services/api";
 import Navbar from "../components/Navbar";
+import { UserContext } from "../context/UserContext";
 
 function Rooms() {
   const [rooms, setRooms] = useState([]);
   const [error, setError] = useState("");
+  const { user } = useContext(UserContext);
 
   useEffect(() => {
     const fetchRooms = async () => {
@@ -35,18 +37,20 @@ function Rooms() {
           ))}
         </div>
       )}
-      <div className="mt-6 text-center">
-        <p className="text-gray-600">
-          ¿No tienes cuenta?{" "}
-          <Link to="/register" className="text-blue-600 hover:underline">
-            Regístrate
-          </Link>{" "}
-          o{" "}
-          <Link to="/login" className="text-blue-600 hover:underline">
-            Inicia sesión
-          </Link>
-        </p>
-      </div>
+      {!user && (
+        <div className="mt-6 text-center">
+          <p className="text-gray-600">
+            ¿No tienes cuenta?{" "}
+            <Link to="/register" className="text-blue-600 hover:underline">
+              Regístrate
+            </Link>{" "}
+            o{" "}
+            <Link to="/login" className="text-blue-600 hover:underline">
+              Inicia sesión
+            </Link>
+          </p>
+        </div>
+      )}
     </div>
   );
 }

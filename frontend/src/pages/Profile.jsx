@@ -279,13 +279,10 @@ function Profile() {
           </button>
         ) : (
           <div>
-            <ChangePassword />
-            <button
-              className="w-full mt-2 bg-gray-400 text-white p-2 rounded-md hover:bg-gray-500 font-semibold shadow-md transition"
-              onClick={() => setShowChangePassword(false)}
-            >
-              Cancelar
-            </button>
+            <ChangePassword
+              onSuccess={() => setShowChangePassword(false)}
+              onCancel={() => setShowChangePassword(false)}
+            />
           </div>
         )}
       </div>

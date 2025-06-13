@@ -32,9 +32,9 @@ export async function createRoom(req, res) {
     if (req.file) {
       image = path.join("rooms", req.file.filename).replace(/\\/g, "/");
     }
-    if (!name || !capacity || !price_per_hour) {
+    if (!name || !capacity || !price_per_hour || !image) {
       return res.status(400).json({
-        error: "Nombre, capacidad y precio por hora son obligatorios",
+        error: "Nombre, capacidad, precio por hora e imagen son obligatorios",
       });
     }
     const id = await roomRepository.createRoom({

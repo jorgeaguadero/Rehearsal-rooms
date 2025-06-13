@@ -107,14 +107,11 @@ function RegisterForm() {
       telefono: prefix + phoneNumber,
       role: "user",
     };
-    console.log("Enviando registro:", payload);
     try {
-      const response = await api.post("/api/auth/register", payload);
-      console.log("Respuesta:", response.data);
+      await api.post("/api/auth/register", payload);
       navigate("/login");
     } catch (err) {
       setError(err.response?.data?.error || "Error al registrarse");
-      console.error("Error:", err);
     }
   };
 
