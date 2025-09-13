@@ -2,7 +2,7 @@
 DROP DATABASE IF EXISTS rehearsal_rooms;
 
 -- Crear la base de datos
-CREATE DATABASE rehearsal_rooms;
+CREATE DATABASE rehearsal_rooms CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
 USE rehearsal_rooms;
 
 -- Crear tabla de usuarios
@@ -12,9 +12,12 @@ CREATE TABLE users (
     username VARCHAR(50) UNIQUE NOT NULL,
     email VARCHAR(100) UNIQUE NOT NULL,
     password VARCHAR(255) NOT NULL,
+    nombre VARCHAR(100) NOT NULL,
+    apellidos VARCHAR(150) NOT NULL,
+    telefono VARCHAR(20) UNIQUE NOT NULL,
     role ENUM('user', 'admin') DEFAULT 'user',
     created_at DATETIME DEFAULT CURRENT_TIMESTAMP
-);
+) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
 
 -- Crear tabla de salas
 DROP TABLE IF EXISTS rooms;
@@ -24,8 +27,9 @@ CREATE TABLE rooms (
     description TEXT,
     capacity INT NOT NULL,
     price_per_hour DECIMAL(10,2) NOT NULL,
+    image VARCHAR(255) DEFAULT NULL,
     created_at DATETIME DEFAULT CURRENT_TIMESTAMP
-);
+) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
 
 -- Crear tabla de reservas
 DROP TABLE IF EXISTS bookings;
@@ -39,4 +43,4 @@ CREATE TABLE bookings (
     created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
     FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE,
     FOREIGN KEY (room_id) REFERENCES rooms(id) ON DELETE CASCADE
-);
+) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;

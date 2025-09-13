@@ -2,18 +2,18 @@ import pool from "../config/database.js";
 
 export async function getBookingsByUser(userId, isAdmin) {
   let query = isAdmin
-    ? "SELECT * FROM bookings"
-    : "SELECT * FROM bookings WHERE user_id = ?";
+    ? `SELECT b.*, u.nombre, u.apellidos, u.username FROM bookings b JOIN users u ON b.user_id = u.id`
+    : `SELECT b.*, u.nombre, u.apellidos, u.username FROM bookings b JOIN users u ON b.user_id = u.id WHERE b.user_id = ?`;
   const params = isAdmin ? [] : [userId];
   const [bookings] = await pool.query(query, params);
   return bookings;
 }
 
 export async function getBookingById(id, userId, isAdmin) {
-  let query = "SELECT * FROM bookings WHERE id = ?";
+  let query = `SELECT b.*, u.nombre, u.apellidos, u.username FROM bookings b JOIN users u ON b.user_id = u.id WHERE b.id = ?`;
   let params = [id];
   if (!isAdmin) {
-    query += " AND user_id = ?";
+    query += " AND b.user_id = ?";
     params.push(userId);
   }
   const [bookings] = await pool.query(query, params);
@@ -26,18 +26,11 @@ export async function checkAvailability(
   endTime,
   excludeBookingId = null
 ) {
+  // Solo hay conflicto si el nuevo tramo se solapa parcialmente con una reserva existente
+  // Es decir: start < bEnd && end > bStart
   let query =
-    'SELECT * FROM bookings WHERE room_id = ? AND status != "cancelled" AND ((start_time <= ? AND end_time >= ?) OR (start_time <= ? AND end_time >= ?) OR (start_time >= ? AND end_time <= ?))';
-  let params = [
-    roomId,
-    endTime,
-    startTime,
-    startTime,
-    startTime,
-    endTime,
-    startTime,
-    endTime,
-  ];
+    'SELECT * FROM bookings WHERE room_id = ? AND status != "cancelled" AND (start_time < ? AND end_time > ?)';
+  let params = [roomId, endTime, startTime];
 
   if (excludeBookingId) {
     query += " AND id != ?";
